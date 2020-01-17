@@ -30,3 +30,5 @@ And creates an interactive plot of the latency over time in your web browser win
 ![plot](img/ex1_plot.png)
 
 In this example we have a file where after 10 seconds we swith the aspect ratio of the video, which shows that the `h265parse` element introduces approx. 600 ms of extra latency.
+
+You can find `file.265` and the corresponding `traces.log` from this example in the `testdata` folder.
