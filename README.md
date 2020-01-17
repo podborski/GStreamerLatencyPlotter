@@ -11,7 +11,7 @@ A small node.js program that allows you to calculate and display the latency of 
 
 3. Run `node main.js traces.log` on that logfile. Check `-h` on more options.
 
-## Exmples
+## Examples
 
 Decode and render the HEVC bitstream `file.265`:
 
