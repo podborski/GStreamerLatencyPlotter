@@ -22,11 +22,11 @@ class FileChecker {
   }
 }
 
-// cli options
+// cli options and description
 const optionDefinitions = [
   {
     name: 'help',
-    description: 'Display this usage guide.',
+    description: 'Display the usage information.',
     alias: 'h',
     type: Boolean
   },
@@ -42,10 +42,10 @@ const optionDefinitions = [
   {
     name: 'numbins',
     alias: 'n',
-    description: 'Number of measurement bins for TOTAL latency computation',
+    description: 'Number of measurement bins for TOTAL latency computation.',
     type: Number,
     multiple: false,
-    defaultValue: 200
+    defaultValue: 300
   },
   {
     name: 'begin',
@@ -66,7 +66,7 @@ const optionDefinitions = [
   {
     name: 'top',
     alias: 't',
-    description: 'Top value bound for visualization purposes. <0 means automatic.',
+    description: 'Y-axiss (latency) limit. <0 means automatic.',
     type: Number,
     multiple: false,
     defaultValue: -1
@@ -92,7 +92,7 @@ const cliDescription = [
     optionList: optionDefinitions
   },
   {
-    content: 'Project home: {underline https://vigitlab.fe.hhi.de/git/SplitRendering}'
+    content: 'Project home: {underline https://github.com/podborski/GStreamerLatencyPlotter}'
   }
 ]
 
@@ -141,7 +141,6 @@ rl.on('line', function(line){
 })
 
 function plotData(){
-  console.log('plot...')
   let layout = {
     title: 'Latency per element',
     xaxis: {
