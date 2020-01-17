@@ -74,7 +74,7 @@ const optionDefinitions = [
   {
     name: 'maxplots',
     alias: 'm',
-    description: 'Sometimes we might have to many lines in the plot. This allows us to display the number of most important contributors.',
+    description: 'Sometimes we might have to many elements in the pipeline. This option allows us to plot only the N most important latency contributors.',
     type: Number,
     multiple: false,
     defaultValue: -1
