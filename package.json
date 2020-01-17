@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "description": "Plot latency over time for each element in the GStreamer pipeline",
   "main": "main.js",
+  "dependencies": {
+    "command-line-args": "^5.1.1",
+    "command-line-usage": "^6.1.0",
+    "nodeplotlib": "^0.6.4",
+    "stats-lite": "^2.2.0",
+    "table": "^5.4.6"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
