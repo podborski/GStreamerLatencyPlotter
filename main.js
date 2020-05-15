@@ -180,15 +180,17 @@ function computeSumPlot(numBins){
   let minTs = null
   let maxTs = null
 
-  let tableData = [['mean', 'stdev', 'var', 'element']]
+  let tableData = [['median', 'mean', 'stdev', 'var', 'element']]
   for(let key in pipeLineElements){
     xes.push(pipeLineElements[key].x)
     yes.push(pipeLineElements[key].y)
 
+    let median = stats.median(pipeLineElements[key].y)
     let mean = stats.mean(pipeLineElements[key].y)
     let variance = stats.variance(pipeLineElements[key].y)
     let stdev = stats.stdev(pipeLineElements[key].y)
-    tableData.push([mean, stdev, variance, key])
+    
+    tableData.push([median, mean, stdev, variance, key])
 
     indexes.push(0)
     if(minTs == null || minTs>pipeLineElements[key].x[0]) minTs = pipeLineElements[key].x[0]
@@ -235,11 +237,12 @@ function computeSumPlot(numBins){
     pipeLineElements['total'].y.push(sumVal)
   }
 
+  let median = stats.median(pipeLineElements['total'].y)
   let mean = stats.mean(pipeLineElements['total'].y)
   let variance = stats.variance(pipeLineElements['total'].y)
   let stdev = stats.stdev(pipeLineElements['total'].y)
   pipeLineElements['total'].userdata = {mean: mean, stdev: stdev}
-  tableData.push([mean, stdev, variance, 'TOTAL'])
+  tableData.push([median, mean, stdev, variance, 'TOTAL'])
 
   console.log(table.table(tableData))
 }
