@@ -116,10 +116,17 @@ let pipeLineElements = {}
 
 rl.on('line', function(line){
   let elements = line.split(/\s+/)
+
+  if(elements.length < 7) return
+  if(elements[4] != "GST_TRACER") return
+  if(elements[6] != "element-latency,") return
+
   if(elements.length != 12) return // our latency lines have always 12 columns
+
   // get name, timestamp and latency
   let name = elements[8].substring(16, elements[8].length-1) // element=(string)=16
-  let latency = parseInt(elements[10].substring(14, elements[10].length-1)) / 1000000 // time=(guint64)=14
+  let time = parseInt(elements[10].substring(14, elements[10].length-1)) // time=(guint64)=14
+  let latency = ((time < 0x8000000000000000)? time: (time - 0xffffffffffffffff - 1)) / 1000000
   let ts = parseInt(elements[11].substring(12, elements[11].length-1)) / 1000000000 // ts=(guint64)=12
 
   if(ts < options.begin && options.begin > 0) return
