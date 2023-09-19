@@ -42,10 +42,10 @@ const optionDefinitions = [
   {
     name: 'numbins',
     alias: 'n',
-    description: 'Number of measurement bins for TOTAL latency computation.',
+    description: 'Number of measurement bins for TOTAL latency computation. <0 means use 20ms bins',
     type: Number,
     multiple: false,
-    defaultValue: 300
+    defaultValue: -1
   },
   {
     name: 'begin',
@@ -116,10 +116,17 @@ let pipeLineElements = {}
 
 rl.on('line', function(line){
   let elements = line.split(/\s+/)
+
+  if(elements.length < 7) return
+  if(elements[4] != "GST_TRACER") return
+  if(elements[6] != "element-latency,") return
+
   if(elements.length != 12) return // our latency lines have always 12 columns
+
   // get name, timestamp and latency
   let name = elements[8].substring(16, elements[8].length-1) // element=(string)=16
-  let latency = parseInt(elements[10].substring(14, elements[10].length-1)) / 1000000 // time=(guint64)=14
+  let time = parseInt(elements[10].substring(14, elements[10].length-1)) // time=(guint64)=14
+  let latency = ((time < 0x8000000000000000)? time: (time - 0xffffffffffffffff - 1)) / 1000000
   let ts = parseInt(elements[11].substring(12, elements[11].length-1)) / 1000000000 // ts=(guint64)=12
 
   if(ts < options.begin && options.begin > 0) return
@@ -154,6 +161,9 @@ function plotData(){
     layout.yaxis.range = [0, options.top]
   }
 
+  let total = pipeLineElements.total
+  delete pipeLineElements.total
+
   // sort all elements by their mean latency value
   let sortedElements = Object.keys(pipeLineElements).map(function(key){
     return [key, pipeLineElements[key]]
@@ -166,7 +176,7 @@ function plotData(){
     sortedElements = sortedElements.slice(0, options.maxplots)
   }
   // prepare data for plotting and finaly plot
-  let data = []
+  let data = [total]
   for(let i=0; i<sortedElements.length; ++i){
     data.push(sortedElements[i][1])
   }
@@ -209,9 +219,10 @@ function computeSumPlot(numBins){
   pipeLineElements['total'].x = []
   pipeLineElements['total'].y = []
 
-  let dt = (maxTs-minTs)/numBins
+  let nBins = (numBins < 0)? Math.round((maxTs-minTs) / 0.02) : numBins
+  let dt = (maxTs-minTs) / nBins
 
-  for(let n=0; n<=numBins; n++){
+  for(let n=0; n<=nBins; n++){
     let ts = minTs + dt*n
     let sumVal = 0
 
@@ -220,17 +231,28 @@ function computeSumPlot(numBins){
       let xArray = xes[i]
 
       do {
-        let x = xArray[startIdx]
-        let dif = Math.abs(ts - x)
-        let nextdif = Math.abs(ts - xArray[startIdx+1])
-        if(nextdif<dif){
-          startIdx++
-        } else{
-          indexes[i] = startIdx
-          if(dif < ts) sumVal += yes[i][startIdx]
+        if (startIdx + 1 > xArray.length) {
           break
         }
-      }while(true)
+
+        let x = xArray[startIdx]
+        if (x > ts + dt) {
+          break;
+        }
+
+        if (x + dt >= ts) {
+          let dif = Math.abs(ts - x)
+          let nextdif = Math.abs(ts - xArray[startIdx+1])
+          if (dif > nextdif) {
+            indexes[i] = startIdx
+            break
+          }
+
+          sumVal += yes[i][startIdx]
+        }
+
+        startIdx++
+      } while(true)
     }
 
     pipeLineElements['total'].x.push(ts)
