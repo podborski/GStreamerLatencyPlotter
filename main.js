@@ -42,10 +42,10 @@ const optionDefinitions = [
   {
     name: 'numbins',
     alias: 'n',
-    description: 'Number of measurement bins for TOTAL latency computation.',
+    description: 'Number of measurement bins for TOTAL latency computation. <0 means use 20ms bins',
     type: Number,
     multiple: false,
-    defaultValue: 300
+    defaultValue: -1
   },
   {
     name: 'begin',
@@ -161,6 +161,9 @@ function plotData(){
     layout.yaxis.range = [0, options.top]
   }
 
+  let total = pipeLineElements.total
+  delete pipeLineElements.total
+
   // sort all elements by their mean latency value
   let sortedElements = Object.keys(pipeLineElements).map(function(key){
     return [key, pipeLineElements[key]]
@@ -173,7 +176,7 @@ function plotData(){
     sortedElements = sortedElements.slice(0, options.maxplots)
   }
   // prepare data for plotting and finaly plot
-  let data = []
+  let data = [total]
   for(let i=0; i<sortedElements.length; ++i){
     data.push(sortedElements[i][1])
   }
@@ -216,9 +219,10 @@ function computeSumPlot(numBins){
   pipeLineElements['total'].x = []
   pipeLineElements['total'].y = []
 
-  let dt = (maxTs-minTs)/numBins
+  let nBins = (numBins < 0)? Math.round((maxTs-minTs) / 0.02) : numBins
+  let dt = (maxTs-minTs) / nBins
 
-  for(let n=0; n<=numBins; n++){
+  for(let n=0; n<=nBins; n++){
     let ts = minTs + dt*n
     let sumVal = 0
 
@@ -227,17 +231,28 @@ function computeSumPlot(numBins){
       let xArray = xes[i]
 
       do {
-        let x = xArray[startIdx]
-        let dif = Math.abs(ts - x)
-        let nextdif = Math.abs(ts - xArray[startIdx+1])
-        if(nextdif<dif){
-          startIdx++
-        } else{
-          indexes[i] = startIdx
-          if(dif < ts) sumVal += yes[i][startIdx]
+        if (startIdx + 1 > xArray.length) {
           break
         }
-      }while(true)
+
+        let x = xArray[startIdx]
+        if (x > ts + dt) {
+          break;
+        }
+
+        if (x + dt >= ts) {
+          let dif = Math.abs(ts - x)
+          let nextdif = Math.abs(ts - xArray[startIdx+1])
+          if (dif > nextdif) {
+            indexes[i] = startIdx
+            break
+          }
+
+          sumVal += yes[i][startIdx]
+        }
+
+        startIdx++
+      } while(true)
     }
 
     pipeLineElements['total'].x.push(ts)
