@@ -8,7 +8,7 @@
     "command-line-usage": "^6.1.0",
     "nodeplotlib": "^0.6.4",
     "stats-lite": "^2.2.0",
-    "table": "^5.4.6"
+    "table": "^6.9.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
